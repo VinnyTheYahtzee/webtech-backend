@@ -8,7 +8,6 @@ from .views import (
     ChangePasswordView,
     DeleteAccountView,
     AdminUserListView,
-    create_admin_user
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -25,7 +24,6 @@ urlpatterns = [
     path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('users/', AdminUserListView.as_view(), name='admin_user_list'),
-    path('create-admin/', create_admin_user),
 
     # Single route for the current user's profile: GET, PUT, PATCH
     path('profile/', UserProfileViewSet.as_view({

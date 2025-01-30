@@ -136,27 +136,3 @@ class AdminUserListView(generics.ListAPIView):
                 Q(last_name__icontains=search_query)
             )
         return qs
-    
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse
-
-def create_admin_user(request):
-    try:
-        User = get_user_model()
-
-        # Use email instead of username
-        if User.objects.filter(email="admin@example.com").exists():
-            return JsonResponse({"message": "Admin already exists."})
-
-        # Create an admin user
-        admin_user = User.objects.create_superuser(
-            email="admin@example.com",
-            password="StrongPassword123",
-            first_name="Admin",
-            last_name="User"
-        )
-
-        return JsonResponse({"message": "Admin user created successfully!", "admin_id": admin_user.id})
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
