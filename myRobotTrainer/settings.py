@@ -58,6 +58,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -72,7 +73,12 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_HEADERS = ["conent-type", "authorization", "accept", "origin", "x-csrftoken", "user-agent"]
+CORS_ALLOW_HEADERS = ["conent-type", 
+                      "authorization", 
+                      "accept", 
+                      "origin", 
+                      "x-csrftoken", 
+                      "user-agent"]
 
 CORS_ALLOWED_ORIGINS = ['https://webtech-frontend-nmeq.onrender.com', 
                         'http://webtech-frontend-nmeq.onrender.com']
