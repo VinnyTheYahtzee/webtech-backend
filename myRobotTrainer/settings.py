@@ -29,6 +29,7 @@ SECRET_KEY = 'django-insecure-vo_m-nn3^1oyk9$rcat#0*nv!ysok-(^^h2wh)p0a@s$kj&q7@
 DEBUG = False
 
 ALLOWED_HOSTS = ["https://webtech-backend-092e.onrender.com",
+                 "webtech-backend-092e.onrender.com",
                  "localhost",
                  "127.0.0.1"
                  ]
