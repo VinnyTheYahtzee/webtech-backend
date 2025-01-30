@@ -67,18 +67,23 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_HEADERS = ["conent-type", 
+CORS_ALLOW_HEADERS = ["content-type", 
                       "authorization", 
                       "accept", 
                       "origin", 
                       "x-csrftoken", 
                       "user-agent"]
+CORS_ALLOW_METHODS = ["GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"]
 
 CORS_ALLOWED_ORIGINS = ['https://webtech-frontend-nmeq.onrender.com', 
                         'http://webtech-frontend-nmeq.onrender.com']
