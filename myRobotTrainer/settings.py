@@ -69,7 +69,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CSRF_TRUSTED_ORIGIONS = ['https://webtech-frontend-092e.onrender.com']
 
 ROOT_URLCONF = 'myRobotTrainer.urls'

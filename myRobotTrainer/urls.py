@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     path('api/contact/', include('contact.urls')),
     path('api/exercises/', include('exercises.urls')),
-    path('api/tplans/', include('tplans.urls')),
+    path('api/workout_plans/', include('tplans.urls')),
     path('api/diary/', include('diary.urls')),
     path("health/", health_check),
 

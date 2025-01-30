@@ -1,10 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from .views import WorkoutPlanViewSet
 
-router = DefaultRouter()
-router.register(r'workout_plans', WorkoutPlanViewSet, basename='workout_plan')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', WorkoutPlanViewSet.as_view({'get': 'list', 'post': 'create'}), name='workout-plan-list'),
 ]
