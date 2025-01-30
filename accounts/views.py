@@ -141,9 +141,13 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 
 def create_admin_user(request):
-    if request.method == "GET":
+    try:
         User = get_user_model()
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser("admin", "admin@example.com", "StrongPassword123")
-            return JsonResponse({"message": "Admin user created successfully!"})
-        return JsonResponse({"message": "Admin already exists."})
+        if User.objects.filter(username="admin").exists():
+            return JsonResponse({"message": "Admin already exists."})
+
+        # Create the superuser
+        User.objects.create_superuser(username="admin", email="admin@example.com", password="StrongPassword123")
+        return JsonResponse({"message": "Admin user created successfully!"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)  # Returns error in JSON
