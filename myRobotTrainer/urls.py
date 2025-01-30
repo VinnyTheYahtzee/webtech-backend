@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,4 +25,6 @@ urlpatterns = [
     path('api/exercises/', include('exercises.urls')),
     path('api/tplans/', include('tplans.urls')),
     path('api/diary/', include('diary.urls')),
+    path("health/", health_check),
+
 ]

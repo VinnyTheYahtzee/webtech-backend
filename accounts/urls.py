@@ -7,7 +7,8 @@ from .views import (
     LogoutView,
     ChangePasswordView,
     DeleteAccountView,
-    AdminUserListView
+    AdminUserListView,
+    health_check
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes

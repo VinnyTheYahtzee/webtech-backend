@@ -28,7 +28,10 @@ SECRET_KEY = 'django-insecure-vo_m-nn3^1oyk9$rcat#0*nv!ysok-(^^h2wh)p0a@s$kj&q7@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://webtech-backend-092e.onrender.com']
+ALLOWED_HOSTS = ["https://webtech-backend-092e.onrender.com",
+                 "localhost",
+                 "127.0.0.1"
+                 ]
 
 
 # Application definition
@@ -64,6 +67,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGIONS = ['https://webtech-frontend-092e.onrender.com']
 
 ROOT_URLCONF = 'myRobotTrainer.urls'
 
