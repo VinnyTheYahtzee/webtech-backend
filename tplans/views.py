@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from .models import WorkoutPlan
+from .models import WorkoutPlan, WorkoutExercise
 from rest_framework.decorators import action
 from .serializers import WorkoutPlanSerializer
 import logging
@@ -45,10 +45,9 @@ class WorkoutPlanViewSet(viewsets.ModelViewSet):
         """
         Generate a default workout plan based on user input.
         """
-        experience = request.data.get("experience_level", "Beginner")
+        experience = request.data.get("experience_level", "Anfänger")
         goal = request.data.get("goal", "Muskelaufbau")
 
-        # Simulated default workout plan (adjust as needed)
         with transaction.atomic():
             workout_plan = WorkoutPlan.objects.create(
                 user=request.user,
@@ -57,8 +56,21 @@ class WorkoutPlanViewSet(viewsets.ModelViewSet):
                 experience_level=experience
             )
 
+            # ✅ Add Default Exercises to the Plan
+            default_exercises = [
+                {"exercise_name": "Bankdrücken", "sets": 3, "reps": 12},
+                {"exercise_name": "Kniebeugen", "sets": 3, "reps": 10},
+                {"exercise_name": "Klimmzüge", "sets": 3, "reps": 8},
+            ]
+
+            for ex in default_exercises:
+                WorkoutExercise.objects.create(workout_plan=workout_plan, **ex)
+
+        # ✅ Serialize the workout plan **with** exercises
+        response_data = WorkoutPlanSerializer(workout_plan).data
+
         logger.info(f"Generated workout plan '{workout_plan.name}' for {request.user.email}")
-        return Response({"message": "Workout Plan Generated", "id": workout_plan.id}, status=status.HTTP_201_CREATED)
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         """
