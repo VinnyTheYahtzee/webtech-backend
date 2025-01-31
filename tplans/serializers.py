@@ -1,23 +1,22 @@
+# serializers.py
 from rest_framework import serializers
-from .models import WorkoutPlan, WorkoutExercise
+from .models import WorkoutPlan, WorkoutExercise, Exercise
+
+class ExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ['id', 'name', 'muscle_group', 'equipment']
 
 class WorkoutExerciseSerializer(serializers.ModelSerializer):
+    exercise = ExerciseSerializer(read_only=True)
+
     class Meta:
         model = WorkoutExercise
-        fields = ['id', 'exercise_name', 'sets', 'reps']
+        fields = ['id', 'exercise', 'sets', 'reps', 'rest']
 
 class WorkoutPlanSerializer(serializers.ModelSerializer):
-    exercises = WorkoutExerciseSerializer(many=True)
+    exercises = WorkoutExerciseSerializer(many=True, read_only=True)
 
     class Meta:
         model = WorkoutPlan
         fields = ['id', 'name', 'goal', 'experience_level', 'created_at', 'exercises']
-
-    def create(self, validated_data):
-        exercises_data = validated_data.pop('exercises')
-        workout_plan = WorkoutPlan.objects.create(**validated_data)
-        
-        for exercise_data in exercises_data:
-            WorkoutExercise.objects.create(workout_plan=workout_plan, **exercise_data)
-
-        return workout_plan

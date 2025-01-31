@@ -1,7 +1,8 @@
+# views.py
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from .models import WorkoutPlan, WorkoutExercise
+from .models import WorkoutPlan, WorkoutExercise, Exercise
 from rest_framework.decorators import action
 from .serializers import WorkoutPlanSerializer
 import logging
@@ -56,15 +57,29 @@ class WorkoutPlanViewSet(viewsets.ModelViewSet):
                 experience_level=experience
             )
 
-            # ✅ Add Default Exercises to the Plan
+            # ✅ Fetch existing exercises or create new ones if necessary
             default_exercises = [
-                {"exercise_name": "Bankdrücken", "sets": 3, "reps": 12},
-                {"exercise_name": "Kniebeugen", "sets": 3, "reps": 10},
-                {"exercise_name": "Klimmzüge", "sets": 3, "reps": 8},
+                {"name": "Bankdrücken", "muscle_group": "Brust", "equipment": "Langhantel"},
+                {"name": "Kniebeugen", "muscle_group": "Beine", "equipment": "Langhantel"},
+                {"name": "Klimmzüge", "muscle_group": "Rücken", "equipment": "Klimmzugstange"},
             ]
 
             for ex in default_exercises:
-                WorkoutExercise.objects.create(workout_plan=workout_plan, **ex)
+                # Attempt to retrieve the Exercise object; create it if it doesn't exist
+                exercise_obj, created = Exercise.objects.get_or_create(
+                    name=ex["name"],
+                    defaults={
+                        "muscle_group": ex["muscle_group"],
+                        "equipment": ex["equipment"],
+                    }
+                )
+                WorkoutExercise.objects.create(
+                    workout_plan=workout_plan,
+                    exercise=exercise_obj,
+                    sets=3,
+                    reps=12 if ex["name"] == "Bankdrücken" else 10 if ex["name"] == "Kniebeugen" else 8,
+                    rest=90
+                )
 
         # ✅ Serialize the workout plan **with** exercises
         response_data = WorkoutPlanSerializer(workout_plan).data
