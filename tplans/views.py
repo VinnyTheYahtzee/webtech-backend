@@ -2,7 +2,8 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
-from .models import WorkoutPlan, WorkoutExercise, Exercise
+from .models import WorkoutPlan, WorkoutExercise
+from exercises.models import Exercise  # Correct import
 from rest_framework.decorators import action
 from .serializers import WorkoutPlanSerializer
 import logging
