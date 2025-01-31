@@ -87,7 +87,7 @@ CORS_ALLOW_METHODS = ["GET",
 
 CORS_ALLOWED_ORIGINS = ['https://webtech-frontend-nmeq.onrender.com', 
                         'http://webtech-frontend-nmeq.onrender.com']
-CSRF_TRUSTED_ORIGIONS = ['https://webtech-frontend-nmeq.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://webtech-frontend-nmeq.onrender.com']
 
 ROOT_URLCONF = 'myRobotTrainer.urls'
 
