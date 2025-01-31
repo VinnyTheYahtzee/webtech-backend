@@ -25,11 +25,13 @@ class WorkoutExercise(models.Model):
     )
     exercise = models.ForeignKey(
         'exercises.Exercise',  # Reference the Exercise model from exercises app
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,             # Allow nulls temporarily
+        blank=True             # Allow blank in forms
     )
     sets = models.PositiveIntegerField()
     reps = models.PositiveIntegerField()
     rest = models.PositiveIntegerField(default=60)  # Rest time in seconds
     
     def __str__(self):
-        return f"{self.exercise.name} - {self.sets}x{self.reps}"
+        return f"{self.exercise.name if self.exercise else 'No Exercise'} - {self.sets}x{self.reps}"
