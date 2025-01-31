@@ -1,10 +1,12 @@
-from django.urls import path
+# tplans/urls.py
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import WorkoutPlanViewSet
 
-urlpatterns = [
-    # List and Create Workout Plans
-    path('', WorkoutPlanViewSet.as_view({'get': 'list', 'post': 'create'}), name='workout-plan-list'),
+router = DefaultRouter()
+router.register(r'', WorkoutPlanViewSet, basename='workoutplan')
 
-    # New: Explicit route for generating workout plans
-    path('generate/', WorkoutPlanViewSet.as_view({'post': 'generate'}), name='workout-plan-generate'),
+urlpatterns = [
+    path('', include(router.urls)),
 ]

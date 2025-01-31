@@ -1,9 +1,11 @@
+# exercises/models.py
+
 from django.db import models
 
 class Exercise(models.Model):
     MUSCLE_GROUPS = [
         ('chest', 'Brust'),
-        ('back', 'Rüken'),
+        ('back', 'Rücken'),
         ('legs', 'Beine'),
         ('shoulders', 'Schultern'),
         ('arms', 'Arme'),

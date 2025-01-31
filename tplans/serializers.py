@@ -1,6 +1,8 @@
+# tplans/serializers.py
+
 from rest_framework import serializers
 from .models import WorkoutPlan, WorkoutExercise
-from exercises.serializers import ExerciseSerializer  # Adjust based on your project structure
+from exercises.serializers import ExerciseSerializer  # Correct path
 
 class WorkoutExerciseSerializer(serializers.ModelSerializer):
     exercise = ExerciseSerializer(read_only=True)

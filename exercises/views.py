@@ -1,57 +1,100 @@
-from django.shortcuts import render
-from rest_framework import generics
-from django.db.models import Q
-from .models import Exercise
-from .serializers import ExerciseSerializer
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import permissions
+# tplans/views.py
 
-class ExerciseListView(generics.ListAPIView):
-    serializer_class = ExerciseSerializer
-    queryset = Exercise.objects.all().order_by('muscle_group', 'name')
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from .models import WorkoutPlan, WorkoutExercise
+from exercises.models import Exercise  # Correct import
+from rest_framework.decorators import action
+from .serializers import WorkoutPlanSerializer
+import logging
+from django.db import transaction
+
+logger = logging.getLogger(__name__)  # ✅ Add logging
+
+class WorkoutPlanPagination(PageNumberPagination):  # ✅ Pagination
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+class WorkoutPlanViewSet(viewsets.ModelViewSet):
+    """
+    Viewset for handling Workout Plans.
+    Users can Create, Retrieve, Update, and Delete their own workout plans.
+    """
+    serializer_class = WorkoutPlanSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = WorkoutPlanPagination
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        """
+        Ensure users can only see their own workout plans.
+        """
+        return WorkoutPlan.objects.filter(user=self.request.user)
 
-        # Optional: filter by muscle group or search
-        muscle = self.request.query_params.get('muscle')
-        search = self.request.query_params.get('search')
+    def perform_create(self, serializer):
+        """
+        Attach the authenticated user to the workout plan before saving.
+        """
+        try:
+            serializer.save(user=self.request.user)
+            logger.info(f"WorkoutPlan created by {self.request.user.email}")
+        except Exception as e:
+            logger.error(f"Error creating WorkoutPlan: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        if muscle:
-            qs = qs.filter(muscle_group=muscle)
-        if search:
-            qs = qs.filter(
-                Q(name__icontains=search) |
-                Q(description__icontains=search)
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """
+        Generate a default workout plan based on user input.
+        """
+        experience = request.data.get("experience_level", "Anfänger")
+        goal = request.data.get("goal", "Muskelaufbau")
+
+        with transaction.atomic():
+            workout_plan = WorkoutPlan.objects.create(
+                user=request.user,
+                name=f"{goal} - {experience}",
+                goal=goal,
+                experience_level=experience
             )
-        return qs
-    
-@api_view(['POST'])
-@permission_classes([permissions.IsAdminUser])  # Only admins can add exercises
-def populate_exercises(request):
-    exercises = [
-        {"name": "Bankdrücken", "muscle_group": "chest", "description": "Klassische Brustübung mit der Langhantel auf der Bank.", "difficulty": "Intermediate", "tier": "A"},
-        {"name": "Schrägbankdrücken positiv", "muscle_group": "chest", "description": "Wird auf einer schrägen Bank ausgeführt mit einer positiven Steigung, um die obere Brust zu treffen.", "difficulty": "Intermediate", "tier": "S"},
-        {"name": "Schrägbankdrücken negativ", "muscle_group": "chest", "description": "Wird auf einer schrägen Bank ausgeführt mit einer negativen Steigung, um die untere Brust zu treffen. Wird nur gebraucht, wenn man in dem Bereich Defizite hat.", "difficulty": "Intermediate", "tier": "B"},
-        {"name": "Klimmzüge", "muscle_group": "back", "description": "Eine der besten Übungen für den Latismus. Ohne Gewicht A-Tier, mit Gewicht S-Tier", "difficulty": "Intermediate", "tier": "A"},
-        {"name": "Latziehen", "muscle_group": "back", "description": "Alternativ zu Klimmzügen, besonders für Anfänger geeignet.", "difficulty": "Beginner", "tier": "B"},
-        {"name": "Kreuzheben", "muscle_group": "legs", "description": "Grundübung für den unteren Rücken, den Gluteus und die Oberschenkel.", "difficulty": "Intermediate", "tier": "A"},
-        {"name": "Kniebeugen", "muscle_group": "legs", "description": "Grundübung für die Beine mit der Langhantel.", "difficulty": "Intermediate", "tier": "A"},
-        {"name": "Beinpresse", "muscle_group": "legs", "description": "Alternativ zu Kniebeugen, trainiert Quadrizeps und Gesäßmuskulatur. Je nach Gerät S bis B-Tier", "difficulty": "Beginner", "tier": "A"},
-        {"name": "Schulterdrücken", "muscle_group": "shoulders", "description": "Drückbewegung über den Kopf für die Schulter.", "difficulty": "Intermediate", "tier": "A"},
-        {"name": "Seitheben", "muscle_group": "shoulders", "description": "Isolation für die seitlichen Schultern.", "difficulty": "Beginner", "tier": "B"},
-        {"name": "Bizepscurls", "muscle_group": "arms", "description": "Klassische Übung für den Bizeps mit Kurzhanteln.", "difficulty": "Beginner", "tier": "B"},
-        {"name": "Trizepsdrücken", "muscle_group": "arms", "description": "Trainiert den Trizeps mit Kabelzug oder Hantel.", "difficulty": "Beginner", "tier": "B"},
-        {"name": "Sit-ups", "muscle_group": "abs", "description": "Beliebte Bauchmuskelübung.", "difficulty": "Beginner", "tier": "C"},
-        {"name": "Planks", "muscle_group": "abs", "description": "Isometrische Übung für den gesamten Rumpf.", "difficulty": "Intermediate", "tier": "B"}
-    ]
 
-    created_exercises = []
-    for exercise_data in exercises:
-        exercise, created = Exercise.objects.get_or_create(name=exercise_data['name'], defaults=exercise_data)
-        if created:
-            created_exercises.append(exercise_data)
+            # ✅ Fetch existing exercises or create new ones if necessary
+            default_exercises = [
+                {"name": "Bankdrücken", "muscle_group": "chest", "equipment": "Langhantel"},
+                {"name": "Kniebeugen", "muscle_group": "legs", "equipment": "Langhantel"},
+                {"name": "Klimmzüge", "muscle_group": "back", "equipment": "Klimmzugstange"},
+            ]
 
-    return Response({"message": f"{len(created_exercises)} neue Übungen hinzugefügt."}, status=status.HTTP_201_CREATED)
+            for ex in default_exercises:
+                # Attempt to retrieve the Exercise object; create it if it doesn't exist
+                exercise_obj, created = Exercise.objects.get_or_create(
+                    name=ex["name"],
+                    defaults={
+                        "muscle_group": ex["muscle_group"],
+                        "equipment": ex["equipment"],
+                    }
+                )
+                WorkoutExercise.objects.create(
+                    workout_plan=workout_plan,
+                    exercise=exercise_obj,
+                    sets=3,
+                    reps=12 if ex["name"] == "Bankdrücken" else 10 if ex["name"] == "Kniebeugen" else 8,
+                    rest=90
+                )
+
+        # ✅ Serialize the workout plan **with** exercises
+        response_data = WorkoutPlanSerializer(workout_plan).data
+
+        logger.info(f"Generated workout plan '{workout_plan.name}' for {request.user.email}")
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Override delete method to ensure only owners can delete.
+        """
+        instance = self.get_object()
+        if instance.user != request.user:
+            return Response({"error": "You can only delete your own plans."}, status=status.HTTP_403_FORBIDDEN)
+        self.perform_destroy(instance)
+        return Response({"message": "Workout plan deleted successfully."}, status=status.HTTP_204_NO_CONTENT)

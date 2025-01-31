@@ -1,3 +1,5 @@
+# tplans/models.py
+
 from django.db import models
 from django.conf import settings  # Import settings to access AUTH_USER_MODEL
 
@@ -22,7 +24,7 @@ class WorkoutExercise(models.Model):
         related_name='exercises'
     )
     exercise = models.ForeignKey(
-        'exercises.Exercise',  # Assuming you have an Exercise model in an 'exercises' app
+        'exercises.Exercise',  # Reference the Exercise model from exercises app
         on_delete=models.CASCADE
     )
     sets = models.PositiveIntegerField()
