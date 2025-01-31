@@ -22,12 +22,9 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # If you want to show only the user's own profile in a list
-        # return UserProfile.objects.filter(user=self.request.user)
-        return UserProfile.objects.all()
+        return UserProfile.objects.filter(user=self.request.user)
 
     def get_object(self):
-        # Retrieve the one UserProfile that matches the request.user
         return get_object_or_404(UserProfile, user=self.request.user)
 
 class UserRegistrationView(APIView):
@@ -105,14 +102,11 @@ class DeleteAccountView(APIView):
         user = request.user
         password = request.data.get('password')
 
-        # Check if the provided password matches the user's actual password
         if not check_password(password, user.password):
             return Response({"detail": "Password is not correct."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete all authentication tokens related to the user
         Token.objects.filter(user=user).delete()
 
-        # Finally, delete the user account
         user.delete()
 
         return Response({"detail": "Your account has been successfully deleted."}, status=status.HTTP_200_OK)
@@ -122,14 +116,12 @@ class AdminUserListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]  # Must be staff too
 
     def get_queryset(self):
-        # Must be staff to see anything
         if not self.request.user.is_staff:
             return User.objects.none()
 
         qs = User.objects.all().order_by('email')
         search_query = self.request.query_params.get('search', None)
         if search_query:
-            # Filter by partial match on email, first_name, or last_name
             qs = qs.filter(
                 Q(email__icontains=search_query) |
                 Q(first_name__icontains=search_query) |
